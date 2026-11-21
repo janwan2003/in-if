@@ -1,9 +1,9 @@
 ---
 slug: in-if
-stage: idea
+stage: launched
 priority: 5
-url:
-repo:
+url: https://pb-in-if.pages.dev
+repo: https://github.com/janwan2003/in-if
 updated: 2026-11-21
 ---
 
@@ -93,6 +93,9 @@ Searches run 2026-11-21. Sources are search-result summaries, not opened pages, 
   overall on the US App Store in April 2016 ([Wikipedia](https://en.wikipedia.com/wiki/Down_to_Lunch),
   [Business Insider](https://businessinsider.in/college-kids-are-going-crazy-for-an-app-that-helps-them-spontaneously-lunch-blaze-or-chill-with-friends-and-it-just-shot-up-above-facebook-in-the-app-store/amp_articleshow/51844884.cms)),
   but it needed an install and a friend graph.
+- **Recheck 2026-11-21 (builder, 2 searches, result summaries only):** no browser-based sealed or threshold commitment tool
+  found. Product Hunt lists [Pull Up?](https://www.producthunt.com/products/pull-up-plan-show-up-repeat), whose users say in or out
+  and "lock the plan in once there are enough people" (an app, nothing sealed). Planlark did not show up in that search.
 - **Gap:** no search-volume figure found; demand evidence is the number of new apps attacking
   "plans never happen" and the universal group-chat behaviour, not volume.
 
@@ -119,20 +122,71 @@ Searches run 2026-11-21. Sources are search-result summaries, not opened pages, 
 
 ## Status
 
-Idea only. Nothing built. Evidence above from web search on 2026-11-21.
+**Live: https://pb-in-if.pages.dev** (Pages deploy 831a2b56; Worker `pb-in-if-db` version e31fbdb1). Product, support and
+privacy page: https://janwan2003.github.io/in-if/ (GitHub Pages from `docs/`, first build was still running at session end).
+Search Console: site verified (META) and sitemap submitted 2026-11-21 (`scripts/gsc.py`).
+
+What exists (Cloudflare Pages + Functions, vanilla JS, no build step):
+- **Storage:** one SQLite-backed Durable Object in Worker `pb-in-if-db` (`worker/`), because the account is at the free
+  plan's 10 D1 databases (`wrangler d1 create` failed this session with "maximum number of D1 databases"). A D1-style shim keeps
+  `lib/api.js` as plain SQL against `schema.sql`.
+- **Resolution** (`lib/resolve.js`): largest set of "in" members whose conditions (`only if ≥ N`, `only if <names>`) all hold
+  (start from every yes, drop anyone whose condition fails, repeat). It tips the first time that set reaches the target before
+  the deadline, and once tipped it stays tipped.
+- **Sealing, enforced server-side** in `view()`: before the tip, responses carry only the count, the number "waiting on a
+  condition", the names of people who opened the plan, and your own answer. After the tip they carry the going list plus
+  anonymous condition counts ("1 was in only if Ben came"), and non-going names are dropped. After an expiry, no names
+  except your own. Who said "not this time" is never returned.
+- **Home:** 7 templates (NYE, Friday drinks, ski trip, festival, five-a-side, reunion, weekend away), target stepper, closing
+  presets or a custom date, "Count me in", FAQ, "Your plans on this device".
+- **Plan page** `/p/<id>`: dot meter, countdown, I'm in / I'm in, only if… (count stepper + name chips) / Not this time,
+  change answer, share (Web Share or copy), live polling every 10 s, tip card with a 1080×1350 PNG to share, expiry card,
+  creator edit/reopen/delete, leave, personal `#k=` link for another device (stripped from the address bar), and a
+  "Start your own plan" call to action.
+- **Link preview** per plan from `functions/p/[id].js`: "Ski weekend · 1 of 4 in" → "It's on! 5 going · Ski weekend" →
+  "… · closed". Static og.png; there is no per-plan image yet.
+- **Safety:** member tokens stored as SHA-256; rate limits per hourly IP hash (create 20/h, join 60/h, writes 600/h);
+  same-origin check on writes; CSP and security headers; caps (200 people, text lengths); plans deleted 120 days after closing
+  (on create, no cron). The test hook `/api/__test/expire` exists only when `TEST_HOOKS=1` (local `.dev.vars`); in production
+  it returns 404 (checked).
+
+Verified 2026-11-21:
+- `npm run test:unit`: 12/12 pass (firm yes, ≥N, mutual ≥N fixed point, cascade drop, mutual name pair, name of an out
+  person, self-reference, tip, conditional non-tip, expiry, sticky tip, anonymous condition lines).
+- `tests/e2e/run.mjs` in real Chromium, 7 contexts (creator at 1280 px desktop, friends at 390 px phone): **PASS locally**
+  (all 19 steps, including expiry and reopen) **and on production** (`BASE=https://pb-in-if.pages.dev`, deploy 958cee89;
+  the expiry step is skipped there, and the test deletes its own plan). Raw API responses are checked for sealing before the
+  tip, for Dee's "not this time" never appearing after it, and for no names after expiry. Also checked: live OG titles, tip
+  on a cascade (one firm yes makes two conditional yeses hold), live update on the creator's page without a reload, card PNG
+  download, withdrawal after the tip (Ben leaves → Cy, "only if Ben", drops; the plan stays on), personal link on a new
+  device, delete → 404, and zero console errors.
+- The production run found a bug: the plan title in "Your plans on this device" stayed stale after an edit. Fixed, redeployed,
+  and re-run to PASS.
+- Rate limit checked locally: creates returned 201 until 20 in the hour, then 429. A cross-origin POST returned 403.
+- Screenshots checked by eye: home desktop, plan open phone, condition panel phone, tipped phone and desktop, share card.
+  Fixed card spacing on the plan page and the misaligned "How it works" grid found this way.
+- Live: `/`, `/privacy`, robots, sitemap, og.png, icons, manifest return 200.
+
+Not covered yet: real iOS Safari / Android Chrome, WhatsApp/iMessage in-app browsers and how the preview renders there;
+the expiry path on production (covered only locally and in unit tests); load beyond a handful of users; languages
+other than English; an accessibility audit beyond labels and roles.
+
+## Metrics
+
+- 2026-11-21: launched today. 0 real plans (the only production plans were the e2e test's own, which it deleted).
+  Search Console: verified today, no data yet.
 
 ## Next steps
 
-1. Write the resolution function and its unit tests first (conditions on counts and names,
-   deadline, withdrawals before the tip, what to do if someone withdraws after the tip).
-2. Design the plan card, the live link preview ("4 of 6 · closes Fri 6 pm") and the "It's on"
-   card. They are the product.
-3. Build on Cloudflare Pages + Functions + D1 (`pb-in-if`): plans, members (nickname + device
-   token), commitments (sealed), conditions; dynamic OG image; rate limit per IP.
-4. Templates: NYE, Christmas Eve drinks, ski trip, festival, five-a-side, reunion.
-5. Playwright end-to-end test: creator + 5 members with mixed conditions → tip → names reveal;
-   and an expiry with no names leaked (check the API responses, not just the UI).
-6. Aim for live by ~2026-12-08 so NYE plans can tip.
+1. Operator check in a real WhatsApp group (inbox line): preview text, answering inside the in-app browser, and the answer
+   remembered after reopening.
+2. Per-plan OG image showing the dots and the count ("4 of 6"). The link preview is the main growth surface, and this
+   beats more features.
+3. Seasonal landing sections or pages that can rank in search: "New Year's Eve plans with friends", "ski trip who's in",
+   with `?t=` template deep links (already supported: `/?t=ski`).
+4. Quality: test the expiry path on production with a short-deadline plan, run an accessibility pass, check iOS Safari.
+5. Read Search Console weekly. Record plan counts from the Durable Object (new plans, members) in Metrics.
+6. Aim for real NYE plans: share nothing as spam. The loop is the tip card's "Start your own plan".
 
 ## Monetization plan
 
@@ -143,3 +197,4 @@ tracking links) once the operator can take money. No ads.
 
 - 2026-11-21 scout: created from scouting session; evidence from 3 web searches (search-result
   summaries, pages not opened). Not built.
+- 2026-11-21 builder: rechecked the evidence (2 searches: still no browser tool for sealed threshold commitments; Product Hunt "Pull Up?" has a lock-in-when-enough mechanic, app only). Built and launched InIf on Pages plus a Durable Object (no D1 slot left). Unit tests 12/12; Chromium e2e PASS locally and on production; GitHub repo and Pages set up; Search Console verified and sitemap submitted.
