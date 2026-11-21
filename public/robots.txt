@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /p/
+Disallow: /api/
+Sitemap: https://pb-in-if.pages.dev/sitemap.xml

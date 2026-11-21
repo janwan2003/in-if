@@ -1,0 +1,16 @@
+{
+  "name": "in-if",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev --port 8870 --ip 127.0.0.1 --persist-to .wrangler/state",
+    "db:local": "wrangler d1 execute pb-in-if --local --file=schema.sql",
+    "test:unit": "node --test tests/unit/*.test.js",
+    "test:e2e": "node tests/e2e/run.mjs",
+    "deploy": "wrangler pages deploy --branch main"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0",
+    "playwright-core": "^1.50.0"
+  }
+}

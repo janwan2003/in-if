@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>InIf: it's on if enough are in. Group plans that actually happen</title>
+<meta name="description" content="Make a group plan that only goes ahead if enough people commit. Friends tap “I’m in” (or “only if Tom comes”), answers stay sealed until it tips. Free, no app, no sign-up.">
+<link rel="canonical" href="https://pb-in-if.pages.dev/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="InIf">
+<meta property="og:title" content="InIf: it's on if enough are in">
+<meta property="og:description" content="Group plans that actually happen. Sealed “I’m in”s, with conditions. Free, no app, no sign-up.">
+<meta property="og:url" content="https://pb-in-if.pages.dev/">
+<meta property="og:image" content="https://pb-in-if.pages.dev/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#faf6f1">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="stylesheet" href="/app.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"InIf","url":"https://pb-in-if.pages.dev/","applicationCategory":"SocialNetworkingApplication","operatingSystem":"Any","description":"Group plans that only go ahead if enough people commit. Sealed answers with conditions, no sign-up.","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}}</script>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/"><img src="/icon.svg" alt="" width="32" height="32">InIf</a>
+    <nav><a href="#how" class="hide-sm">How it works</a><a href="#faq">FAQ</a></nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <h1>It's on if enough are in.</h1>
+        <p class="lede">Group plans die because nobody wants to say yes first. With InIf, everyone answers in secret. When enough people are in, the plan tips and the names appear. If not, it quietly expires and nobody’s answer is ever shown.</p>
+        <ul class="points">
+          <li><strong>Sealed answers.</strong> Nobody sees who said yes, not even you, until it tips.</li>
+          <li><strong>“I’m in, only if…”</strong> Only if at least 8 come, or only if Ana and Tom come.</li>
+          <li><strong>One link, no app.</strong> Friends open it in the chat, type a name, tap. Done.</li>
+        </ul>
+        <div class="card demo" aria-label="Example plan">
+          <span class="pill">Open · closes Fri 6:00 PM</span>
+          <h3 style="margin-top:10px">Ski weekend in February, about €300</h3>
+          <div class="meter" aria-hidden="true"><span class="dot in"></span><span class="dot in"></span><span class="dot in"></span><span class="dot in"></span><span class="dot wait"></span><span class="dot"></span></div>
+          <div class="count">4 of 6 <small>are in · 1 more if their condition is met</small></div>
+        </div>
+      </div>
+
+      <form class="card create" id="create" novalidate>
+        <h2>Start a plan</h2>
+        <div class="chips" id="templates" role="group" aria-label="Templates" style="margin-bottom:16px"></div>
+        <label class="field"><span>What’s the plan?</span><input type="text" name="title" maxlength="80" required placeholder="Ski weekend in February" autocomplete="off"></label>
+        <div class="row2">
+          <label class="field"><span>When? <em>(optional)</em></span><input type="text" name="when" maxlength="60" placeholder="14–16 Feb" autocomplete="off"></label>
+          <label class="field"><span>Answers close</span>
+            <select name="close">
+              <option value="24">In 24 hours</option>
+              <option value="48" selected>In 2 days</option>
+              <option value="72">In 3 days</option>
+              <option value="168">In a week</option>
+              <option value="336">In 2 weeks</option>
+              <option value="custom">Pick a date and time…</option>
+            </select>
+          </label>
+        </div>
+        <label class="field hidden" id="custom-wrap"><span>Close at</span><input type="datetime-local" name="custom"></label>
+        <label class="field"><span>Details <em>(optional: cost, place, link)</em></span><textarea name="details" maxlength="400" rows="2" placeholder="Chalet for 6–8, about €300 each incl. pass"></textarea></label>
+        <div class="target-row">
+          <span class="lbl" id="target-lbl">It’s on if at least</span>
+          <div class="stepper" role="group" aria-labelledby="target-lbl">
+            <button type="button" data-step="-1" aria-label="Fewer">−</button>
+            <output id="target" aria-live="polite">6</output>
+            <button type="button" data-step="1" aria-label="More">+</button>
+          </div>
+          <span class="lbl">are in</span>
+        </div>
+        <label class="field"><span>Your name</span><input type="text" name="name" maxlength="24" required placeholder="As your friends know you" autocomplete="nickname"></label>
+        <label class="check"><input type="checkbox" name="in" checked> Count me in</label>
+        <button class="btn primary block big" type="submit">Create the link</button>
+        <p class="err" id="create-err" role="alert"></p>
+        <p class="muted small" style="margin:6px 0 0">Free. No sign-up, no app. You’ll get a link to paste in the group chat.</p>
+      </form>
+    </section>
+
+    <section class="section hidden" id="mine-sec">
+      <h2>Your plans on this device</h2>
+      <div class="card mine" id="mine"></div>
+    </section>
+
+    <section class="section" id="how">
+      <h2>How it works</h2>
+      <div class="steps">
+        <div class="card"><h3>Write the plan</h3><p class="muted">Say what it is and how many people it needs: “NYE house party, on if 8 are in by Sunday.” Send the link to the group.</p></div>
+        <div class="card"><h3>Everyone answers in secret</h3><p class="muted">Friends tap <strong>I’m in</strong>, <strong>I’m in, only if…</strong> or <strong>Not this time</strong>. Everyone sees the count, nobody sees the names.</p></div>
+        <div class="card"><h3>It tips, or it quietly expires</h3><p class="muted">When enough are in (conditions included), it’s on: names appear and you get a card for the chat. If not, it closes and no answer is ever shown.</p></div>
+      </div>
+    </section>
+
+    <section class="section faq" id="faq">
+      <h2>Questions</h2>
+      <details><summary>Why sealed answers?</summary><p>Saying yes first feels exposed, so everyone writes “maybe” and the plan dies. When nobody can see your answer unless the plan actually happens, it is safe to say what you really want. This is the same all-or-nothing idea behind crowdfunding, applied to a weekend away.</p></details>
+      <details><summary>How do conditions work?</summary><p>“I’m in, only if at least 8 are going” or “only if Ana and Tom are going.” InIf finds the largest group in which everyone’s conditions hold. If that group reaches the number the plan needs, it tips. After the tip, the card shows things like “2 were in only if Tom came” as counts, never who.</p></details>
+      <details><summary>Who can see what?</summary><p>Before the tip: everyone sees how many are in and the names of people who opened the plan, but not anyone’s answer. Not even the person who made it. After the tip: the names of who’s going. Who said “not this time” is never shown. If the plan expires, no answers are shown, ever.</p></details>
+      <details><summary>Can the count give someone away?</summary><p>In a very small group it can hint: if only two people have opened it and the count says 1, you can guess. For groups of five or more it works well. Each person only ever sees their own answer.</p></details>
+      <details><summary>Can I change my answer?</summary><p>Yes, until the deadline. After the plan tips, you can still drop out or join in, and the going list updates.</p></details>
+      <details><summary>Do my friends need an app or an account?</summary><p>No. They open the link, type a name and tap. Your answer is remembered on your device. You can copy a personal link to answer from another phone.</p></details>
+      <details><summary>Is it free?</summary><p>Yes. No ads, no tracking, no sign-up. Plans are deleted automatically a few months after they close. See the <a href="/privacy">privacy policy</a>.</p></details>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <p><a href="/privacy">Privacy</a><a href="https://janwan2003.github.io/in-if/">About InIf</a></p>
+    <p>InIf: group plans that only happen if enough people are in.</p>
+  </footer>
+</div>
+<script type="module" src="/home.js"></script>
+</body>
+</html>

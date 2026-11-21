@@ -1,0 +1,17 @@
+name = "pb-in-if-db"
+main = "index.js"
+compatibility_date = "2025-11-01"
+workers_dev = false
+
+[[rules]]
+type = "Text"
+globs = ["**/*.sql"]
+fallthrough = true
+
+[[durable_objects.bindings]]
+name = "PLANS"
+class_name = "InIfDB"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["InIfDB"]
