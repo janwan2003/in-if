@@ -235,6 +235,15 @@ try {
     await A.goto(`${BASE}/p/${planId}`);
   }
 
+  step('usage stats: the route is hidden without the key; with it, counts only');
+  assert.equal((await fetch(`${BASE}/api/__stats`)).status, 404);
+  assert.equal((await fetch(`${BASE}/api/__stats`, { headers: { 'x-stats-key': 'wrong' } })).status, 404);
+  if (process.env.STATS_KEY) {
+    const st = await (await fetch(`${BASE}/api/__stats`, { headers: { 'x-stats-key': process.env.STATS_KEY } })).json();
+    assert.ok(st.plansTotal >= 1 && st.plansTipped >= 1 && st.peopleTotal >= 5 && st.newJoiners7d >= 4, JSON.stringify(st));
+    assert.ok(!/Ana|Ski/.test(JSON.stringify(st)), 'no names or plan text in stats');
+  }
+
   step('home lists the plan; delete removes it for everyone');
   await A.goto(BASE);
   await A.locator('#mine').getByText('Ski weekend in Feb').waitFor();

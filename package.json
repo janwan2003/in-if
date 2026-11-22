@@ -7,10 +7,13 @@
     "db:local": "wrangler d1 execute pb-in-if --local --file=schema.sql",
     "test:unit": "node --test tests/unit/*.test.js",
     "test:e2e": "node tests/e2e/run.mjs",
-    "deploy": "wrangler pages deploy --branch main"
+    "deploy": "wrangler pages deploy --branch main",
+    "test:layout": "node tests/e2e/layout.mjs",
+    "stats": "sh scripts/stats.sh"
   },
   "devDependencies": {
-    "wrangler": "^4.0.0",
-    "playwright-core": "^1.50.0"
+    "axe-core": "^4.14.1",
+    "playwright-core": "^1.50.0",
+    "wrangler": "^4.0.0"
   }
 }

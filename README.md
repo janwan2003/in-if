@@ -23,6 +23,7 @@ npx -y pnpm@9 install
 npx wrangler pages dev --port 8870 --ip 127.0.0.1 --persist-to .wrangler/state
 npm run test:unit
 BASE=http://127.0.0.1:8870 node tests/e2e/run.mjs     # real Chromium, 7 contexts, screenshots in shots/
+BASE=http://127.0.0.1:8870 node tests/e2e/layout.mjs  # 360/390/768/1280 px: overflow, wrapped buttons, axe-core, console
 node tools/render-images.mjs                           # og.png and icons
 ```
 
@@ -31,5 +32,11 @@ node tools/render-images.mjs                           # og.png and icons
 set -a; . ../../.env; set +a
 (cd worker && npx wrangler deploy)        # only when worker/ or lib/ changed
 npx wrangler pages deploy --branch main
-BASE=https://pb-in-if.pages.dev node tests/e2e/run.mjs   # deletes its own plan; skips the expiry step
+BASE=https://pb-in-if.pages.dev node tests/e2e/run.mjs     # deletes its own plan; skips the expiry step
+BASE=https://pb-in-if.pages.dev node tests/e2e/layout.mjs  # deletes its fixture plans; skips the expired state
 ```
+
+## Usage counts
+`npm run stats` reads `/api/__stats` (counts only: plans, tipped, people, new creators/joiners this week and last).
+The route returns 404 unless the `x-stats-key` header matches the Worker secret `STATS_KEY`
+(kept as `INIF_STATS_KEY` in this venture's gitignored `.env`; locally `worker/.dev.vars`).

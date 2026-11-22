@@ -36,7 +36,7 @@ export class InIfDB extends DurableObject {
     ctx.blockConcurrencyWhile(async () => {
       for (const stmt of SCHEMA.split(';').map((s) => s.trim()).filter(Boolean)) ctx.storage.sql.exec(stmt);
     });
-    this.env2 = { DB: new ShimDB(ctx.storage), TEST_HOOKS: env.TEST_HOOKS };
+    this.env2 = { DB: new ShimDB(ctx.storage), TEST_HOOKS: env.TEST_HOOKS, STATS_KEY: env.STATS_KEY };
   }
   async fetch(request) {
     const url = new URL(request.url);

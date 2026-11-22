@@ -1,10 +1,10 @@
 ---
 slug: in-if
 stage: launched
-priority: 5
+priority: 4
 url: https://pb-in-if.pages.dev
 repo: https://github.com/janwan2003/in-if
-updated: 2026-11-21
+updated: 2026-11-22
 ---
 
 # in-if
@@ -122,8 +122,8 @@ Searches run 2026-11-21. Sources are search-result summaries, not opened pages, 
 
 ## Status
 
-**Live: https://pb-in-if.pages.dev** (Pages deploy 831a2b56; Worker `pb-in-if-db` version e31fbdb1). Product, support and
-privacy page: https://janwan2003.github.io/in-if/ (GitHub Pages from `docs/`, first build was still running at session end).
+**Live: https://pb-in-if.pages.dev** (Pages deploy 9a95ab62, 2026-11-22; Worker `pb-in-if-db` version 43d34905 plus secret
+`STATS_KEY`). Product, support and privacy page: https://janwan2003.github.io/in-if/ (GitHub Pages from `docs/`, 200 on 2026-11-22).
 Search Console: site verified (META) and sitemap submitted 2026-11-21 (`scripts/gsc.py`).
 
 What exists (Cloudflare Pages + Functions, vanilla JS, no build step):
@@ -148,7 +148,30 @@ What exists (Cloudflare Pages + Functions, vanilla JS, no build step):
 - **Safety:** member tokens stored as SHA-256; rate limits per hourly IP hash (create 20/h, join 60/h, writes 600/h);
   same-origin check on writes; CSP and security headers; caps (200 people, text lengths); plans deleted 120 days after closing
   (on create, no cron). The test hook `/api/__test/expire` exists only when `TEST_HOOKS=1` (local `.dev.vars`); in production
-  it returns 404 (checked).
+  it returns 404 (checked again 2026-11-22).
+- **Usage counts:** `npm run stats` → `/api/__stats` (plans, tipped, open now, people, new creators and joiners this week and
+  the week before). Counts only. Returns 404 unless `x-stats-key` matches the Worker secret `STATS_KEY` (kept as
+  `INIF_STATS_KEY` in this venture's gitignored `.env`).
+
+Quality pass 2026-11-22 (verified on production, deploy 9a95ab62 + Worker 43d34905):
+- `npm run test:unit` 12/12. `tests/e2e/run.mjs` PASS locally (20 steps, with expiry and a new stats step) and on
+  production (expiry skipped; its plan deleted, so the stats counts were the same before and after).
+- New `tests/e2e/layout.mjs`: 8 page states (home, open plan as creator and as visitor, condition panel, tipped, expired,
+  missing plan, privacy) × 4 widths (360, 390, 768, 1280 px) in Chromium. It checks horizontal overflow, button labels
+  wrapping onto two lines, console errors, and axe-core 4 (WCAG 2 A/AA + best practice). **PASS locally (32/32) and on
+  production (28/28; the expired state is local only)**. The first run found 40 failures, all fixed:
+  - white on the orange buttons was 3.1:1. Buttons now use `--accent-strong` #d63f15 (4.6:1), and the tip card gradient
+    starts at #0a8449 (4.8:1);
+  - heading order (an h3 with no h2 before it) on the home demo card and the plan's share card.
+- Fixed by eye from the screenshots: on phones the create form now comes right after the pitch (it used to sit below
+  the example card, about one screen down); "I’m in, only if…" wrapped onto two lines at 390 px; the target row wrapped
+  ("It’s on if [6] are in" now); the demo count wrapped mid-sentence; the countdown said "7 days 0 h left".
+- Bugs fixed: the plan id in the link-preview HTML (`og:url`) was not escaped (`/p/"><b>x` was echoed; now dropped,
+  checked on production). If joining worked but saving the answer failed, the next tap tried to join again and got
+  "already called …"; the page now adopts the joined view.
+- Privacy page (app and GitHub Pages) said "D1 database"; it now says Durable Objects storage.
+- GitHub Pages product page and its privacy page: 200, no overflow at 390 and 1280 px, no console errors, all links
+  resolve to the app, the privacy page or GitHub issues.
 
 Verified 2026-11-21:
 - `npm run test:unit`: 12/12 pass (firm yes, ≥N, mutual ≥N fixed point, cascade drop, mutual name pair, name of an out
@@ -167,25 +190,31 @@ Verified 2026-11-21:
   Fixed card spacing on the plan page and the misaligned "How it works" grid found this way.
 - Live: `/`, `/privacy`, robots, sitemap, og.png, icons, manifest return 200.
 
-Not covered yet: real iOS Safari / Android Chrome, WhatsApp/iMessage in-app browsers and how the preview renders there;
-the expiry path on production (covered only locally and in unit tests); load beyond a handful of users; languages
-other than English; an accessibility audit beyond labels and roles.
+Not covered yet: real iOS Safari / Android Chrome (only Chromium with mobile emulation), WhatsApp/iMessage in-app
+browsers and how the preview renders there; the expiry path on production (covered only locally and in unit tests);
+load beyond a handful of users; languages other than English; screen-reader use by a person (axe checks rules only).
 
 ## Metrics
 
 - 2026-11-21: launched today. 0 real plans (the only production plans were the e2e test's own, which it deleted).
   Search Console: verified today, no data yet.
+- 2026-11-22 (`npm run stats`, production, 14:39 UTC): 1 plan, 1 tipped, 5 people, 1 new creator and 4 new joiners in
+  7 days. This is most likely the leftover of the 2026-11-21 production e2e run that failed midway (same shape:
+  5 people after one leaves, tipped), so **0 confirmed real users**. Search Console (`scripts/gsc.py status`): sitemap
+  still pending, no search-analytics rows for 2026-10-25..11-22.
 
 ## Next steps
 
 1. Operator check in a real WhatsApp group (inbox line): preview text, answering inside the in-app browser, and the answer
    remembered after reopening.
 2. Per-plan OG image showing the dots and the count ("4 of 6"). The link preview is the main growth surface, and this
-   beats more features.
+   beats more features. (Needs an image renderer in a Function, for example an SVG→PNG via WASM; check the free plan's
+   CPU limit first.)
 3. Seasonal landing sections or pages that can rank in search: "New Year's Eve plans with friends", "ski trip who's in",
    with `?t=` template deep links (already supported: `/?t=ski`).
 4. Quality: test the expiry path on production with a short-deadline plan, run an accessibility pass, check iOS Safari.
-5. Read Search Console weekly. Record plan counts from the Durable Object (new plans, members) in Metrics.
+5. Weekly: `npm run stats` and `python3 scripts/gsc.py status` into Metrics. Subtract the known test leftover (1 plan,
+   5 people) until it ages out (~120 days after its deadline).
 6. Aim for real NYE plans: share nothing as spam. The loop is the tip card's "Start your own plan".
 
 ## Monetization plan
@@ -198,3 +227,5 @@ tracking links) once the operator can take money. No ads.
 - 2026-11-21 scout: created from scouting session; evidence from 3 web searches (search-result
   summaries, pages not opened). Not built.
 - 2026-11-21 builder: rechecked the evidence (2 searches: still no browser tool for sealed threshold commitments; Product Hunt "Pull Up?" has a lock-in-when-enough mechanic, app only). Built and launched InIf on Pages plus a Durable Object (no D1 slot left). Unit tests 12/12; Chromium e2e PASS locally and on production; GitHub repo and Pages set up; Search Console verified and sitemap submitted.
+- 2026-11-22 review: lowered p5→p4. URL 200, 0 console errors (headless Chromium, 390 px, 2026-11-22 ~03:40 UTC); Search Console 0 impressions 11-01→11-22; usage not countable (Durable Object, `/api/stats` 404). Under 21 days live, so no traction verdict. No seasonal window; p5 was only a builder-in-progress marker, and p5 is reserved for windows closing within weeks.
+- 2026-11-22 builder (quality): new layout+accessibility test (8 states × 4 widths, axe-core) found 40 failures (button contrast 3.1:1, heading order), all fixed; fixed phone layout (create form now directly after the pitch, wrapped buttons and rows), an unescaped plan id in the preview HTML, a join-then-answer retry bug, and the stale "D1" in the privacy page; added a key-protected counts-only `/api/__stats`. Unit 12/12; run.mjs and layout.mjs PASS locally and on production (Pages 9a95ab62, Worker 43d34905).

@@ -219,6 +219,7 @@ async function submit(mode) {
       if (!name) { err.textContent = 'Add your name first.'; $('#name').focus(); busy = false; return; }
       const j = await api(`plans/${id}/join`, { method: 'POST', body: { name } });
       token = j.token;
+      v = j.view; // joined: a failed answer below must not make the next tap join again
       savePlan(id, { token, title: v.plan.title });
       try { localStorage.setItem('inif:name', name); } catch {}
     }
@@ -240,7 +241,7 @@ async function submit(mode) {
 function sharePrompt(p, fresh) {
   const text = `${p.title}${p.when ? ` (${p.when})` : ''}: it’s on if ${p.target} are in by ${fmtDeadline(p.deadline)}. Answers are sealed until it tips, so just say what you want.`;
   return h('div', { class: 'card', style: fresh ? 'border:2px solid var(--accent)' : '' },
-    fresh ? h('h2', { text: 'Your plan is ready' }) : h('h3', { text: 'Get more people to answer' }),
+    fresh ? h('h2', { text: 'Your plan is ready' }) : h('h2', { class: 'sub', text: 'Get more people to answer' }),
     h('p', { class: 'muted', text: fresh ? 'Send the link to the group chat. Everyone answers in secret, and you’ll all see it tip.' : 'The more people see it, the faster it tips.' }),
     h('button', { class: 'btn primary block', id: 'share', onclick: async () => { const r = await share({ title: p.title, text, url: planUrl() }); if (fresh && r !== 'cancelled') { isNew = false; render(); } }, text: 'Send to the group' }),
     h('p', { class: 'muted small', style: 'margin:8px 0 0;word-break:break-all' }, planUrl()));
@@ -339,12 +340,12 @@ async function saveCard(p) {
   const c = h('canvas', { width: W, height: H });
   const x = c.getContext('2d');
   const g = x.createLinearGradient(0, 0, W, H);
-  g.addColorStop(0, '#0f9d58'); g.addColorStop(.6, '#0b7d63'); g.addColorStop(1, '#0a5f73');
+  g.addColorStop(0, '#0a8449'); g.addColorStop(.6, '#0b7d63'); g.addColorStop(1, '#0a5f73');
   x.fillStyle = g; x.fillRect(0, 0, W, H);
   const font = (w, s) => `${w} ${s}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
   x.fillStyle = '#fff';
   x.font = font(800, 40); x.fillText('InIf', 80, 120);
-  x.font = font(900, 150); x.fillText('It’s on!', 80, 330);
+  x.font = font(800, 150); x.fillText('It’s on!', 80, 330);
   x.font = font(800, 64);
   let y = wrap(x, p.title, 80, 450, W - 160, 76, 3);
   if (p.when) { x.font = font(600, 44); x.globalAlpha = .85; x.fillText(p.when, 80, y + 10); x.globalAlpha = 1; y += 70; }

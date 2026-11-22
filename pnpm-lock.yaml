@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      axe-core:
+        specifier: ^4.14.1
+        version: 4.14.1
       playwright-core:
         specifier: ^1.50.0
         version: 1.65.1
@@ -425,6 +428,10 @@ packages:
 
   asynckit@0.4.0:
     resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
+
+  axe-core@4.14.1:
+    resolution: {integrity: sha512-FHfa+lmNjQZfJz1q8wKqIDwC6DExcHt/pkjNQb09a3NPjCKg2rhu5qb2S4r76ASyFNNtuFooJpZe37OgudVGtQ==}
+    engines: {node: '>=4'}
 
   call-bind-apply-helpers@1.0.2:
     resolution: {integrity: sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ==}
@@ -942,6 +949,8 @@ snapshots:
       humanize-ms: 1.2.1
 
   asynckit@0.4.0: {}
+
+  axe-core@4.14.1: {}
 
   call-bind-apply-helpers@1.0.2:
     dependencies:

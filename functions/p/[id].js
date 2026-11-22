@@ -28,7 +28,8 @@ export async function onRequestGet({ request, env, params }) {
   } catch (e) {
     console.error(e);
   }
-  const url = `${new URL(request.url).origin}/p/${id}`;
+  const safeId = /^[A-Za-z0-9]{1,16}$/.test(id) ? id : '';
+  const url = `${new URL(request.url).origin}/p/${safeId}`;
   const res = new HTMLRewriter()
     .on('title', { element(el) { el.setInnerContent(`${title} · InIf`); } })
     .on('meta[property="og:title"]', { element(el) { el.setAttribute('content', title); } })

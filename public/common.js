@@ -89,9 +89,9 @@ export function fmtLeft(ms) {
   const m = Math.round(ms / 60000);
   if (m < 60) return `${m} min left`;
   const hrs = Math.floor(m / 60);
-  if (hrs < 24) return `${hrs} h ${m % 60} min left`;
+  if (hrs < 24) return m % 60 ? `${hrs} h ${m % 60} min left` : `${hrs} h left`;
   const d = Math.floor(hrs / 24);
-  return `${d} day${d > 1 ? 's' : ''} ${hrs % 24} h left`;
+  return `${d} day${d > 1 ? 's' : ''}${hrs % 24 ? ` ${hrs % 24} h` : ''} left`;
 }
 export function fmtAhead(ms) {
   const m = Math.round(ms / 60000);
